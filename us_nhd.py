@@ -7,6 +7,8 @@ or ftp://nhdftp.usgs.gov/DataSets/Staged/SubRegions/FileGDB/HighResolution/
 
 PersonalGDB files can be converted to shapefiles with a default Windows build of QGIS or gdal.
 
+See http://www.gdal.org/ogr/drv_mdb.html or http://www.gdal.org/ogr/drv_pgeo.html
+
 These files are very large and it may be desirable to cut them down to size first
 
 http://nhd.usgs.gov/NHDDataDictionary_model2.0.pdf helps explain the definitions of some fields
@@ -45,6 +47,7 @@ def filterTags(attrs):
         return
     tags = {}
     
+    '''
     for k,v in attrs.iteritems():
         if k not in ('AreaSqKm', 'ComID', 'FDate', 'FType', 'OBJECTID', 'Permanent_', 'Resolution', 'Shape_Area', 'Shape_Leng', 'Elevation'):
             tags['nhd:'+k]=v
@@ -54,7 +57,7 @@ def filterTags(attrs):
             tags['ele'] =  float(attrs['Elevation'].strip())
     except ValueError:
         pass
+    '''    
         
-        
-    return tags
+    return attrs
     
