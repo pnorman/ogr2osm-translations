@@ -103,11 +103,15 @@ NHDWaterbody
 43600   RESERVOIR       n=water water=pond              Not otherwise specified.
 43601   RESERVOIR       n=water water=pond pond=aquaculture
 436__
+43603   RESERVOIR       n=water water=pool              decorative pool?
 43609   RESERVOIR       n=water water=pond pond=cooling
 43610   RESERVOIR       n=water water=pond pond=filtration
 43611   RESERVOIR       n=water water=pond pond=settling
 43612   RESERVOIR       n=water water=pond pond=sewage
 43613   RESERVOIR       n=water water=pond pond=storage
+43613   RESERVOIR       n=water water=pond pond=storage
+43614   RESERVOIR       n=water water=pond              in 0310 these are used for all ponds not just storage ponds?
+43617   RESERVOIR       n=water water=pond              as in 43614
 46600   SWAMP/MARSH     n=wetland 
 46601   SWAMP/MARSH     n=wetland intermittent=yes
 46602   SWAMP/MARSH     n=wetland
@@ -293,6 +297,9 @@ def filterTags(attrs):
                 tags['natural'] = 'water'
                 tags['water'] = 'pond'
                 tags['pond'] = 'aquaculture'
+            elif attrs['FCode'] == '43603':
+                tags['natural'] = 'water'
+                tags['water'] = 'pool'
             elif attrs['FCode'] == '43609':
                 tags['natural'] = 'water'
                 tags['water'] = 'pond'
@@ -313,6 +320,12 @@ def filterTags(attrs):
                 tags['natural'] = 'water'
                 tags['water'] = 'pond'
                 tags['pond'] = 'storage'
+            elif attrs['FCode'] == '43614':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
+            elif attrs['FCode'] == '43617':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
             elif attrs['FCode'] == '46600':
                 tags['natural'] = 'wetland'
             elif attrs['FCode'] == '46601':
