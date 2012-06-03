@@ -48,7 +48,9 @@ ReachCode       combining ways?
 Internal mappings:
 n is short for natural
 ww is short for waterway
+
 OSM Mappings
+
 NHDFlowline
 Source FCode            OSM value                             Shortcomings
 55800   ARTIFICIAL PATH ww=stream/river                 stream/river may need adjusting
