@@ -106,7 +106,10 @@ def filterTags(attrs):
         del attrs['PROJ_NO']
 
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
-        pass
+        if 'YR' in attrs:
+            if attrs['YR'].strip() != '':
+                tags['start_date'] = attrs['YR'].strip()
+            del attrs['YR']
         
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
         if 'CONSTATUS' in attrs:
