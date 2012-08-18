@@ -36,13 +36,13 @@ def translateName(rawname):
 
 
 
-def translateAttributes(attrs):
+def filterTags(attrs):
 	if not attrs: return
 
 	tags = {}
 	
 	#Add the source
-	tags.update({'source':'City of Surrey 2011 GIS Data'})
+	tags.update({'source':'City of Surrey 2012 GIS Data'})
 	#automagically convert names
 	if attrs['ROAD_NAME']:
 		tags.update({'name':translateName(attrs['ROAD_NAME'].strip(' '))})
