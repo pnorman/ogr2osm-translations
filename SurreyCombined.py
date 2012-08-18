@@ -51,24 +51,20 @@ def translateName(rawname):
 
 def filterFeature(ogrfeature, fieldNames, reproject):
     if not ogrfeature: return
+    
+    index = ogrfeature.GetFieldIndex('STATUS')
+    if index >= 0:
+        if ogrfeature.GetField(index) in ('History', 'For Construction', 'Proposed'):
+            return None
+
     index = ogrfeature.GetFieldIndex('__LAYER')
     if index >= 0:
         layer = ogrfeature.GetField(index)
         
     if layer == 'trnTrafficSignalsSHP':
-        index = ogrfeature.GetFieldIndex('STATUS')
-        if index >= 0:
-            if ogrfeature.GetField(index) == 'Proposed':
-                return None
         index = ogrfeature.GetFieldIndex('CONSTATUS')
         if index >= 0:
             if ogrfeature.GetField(index) == 'Proposed':
-                return None
-        
-    if layer == 'wtrHydrantsSHP':
-        index = ogrfeature.GetFieldIndex('STATUS')
-        if index >= 0:
-            if ogrfeature.GetField(index) in ('History', 'For Construction', 'Proposed'):
                 return None
         
     return ogrfeature
