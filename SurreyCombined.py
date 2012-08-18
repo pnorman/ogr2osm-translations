@@ -4,6 +4,11 @@ A translation file for City of Surrey GIS data
 See https://github.com/pnorman/SurreyCombinedAuto for related scripts
 
 Copyright (c) 2011-2012 Paul Norman
+
+
+Layer information
+wtrHydrantsSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/29
+
 '''
 
 from osgeo import ogr
@@ -89,16 +94,42 @@ def filterTags(attrs):
     if 'YTD_COST' in attrs:
             del attrs['YTD_COST']
     if '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
+        if 'ANC_YRROLE' in attrs:
+            del attrs['ANC_YRROLE']
         if 'BV_MANUFAC' in attrs:
             del attrs['BV_MANUFAC']
         if 'BV_MODEL' in attrs:
             del attrs['BV_MODEL']
         if 'COMMENTS' in attrs:
             del attrs['COMMENTS']
+        if 'COND_DATE' in attrs:
+            del attrs['COND_DATE']
+        if 'CONDITION' in attrs:
+            del attrs['CONDITION']
         if 'DIS2VALVE' in attrs: # Distance to valve
             del attrs['DIS2VALVE']
+        if 'FACILITYID' in attrs:
+            del attrs['FACILITYID']
+        if 'ENABLED' in attrs:
+            del attrs['ENABLED']
+        if 'GIS_ES' in attrs:
+            del attrs['GIS_ES']
+        if 'LAST_MAINT' in attrs:
+            del attrs['LAST_MAINT']
+        if 'LC_COST' in attrs:
+            del attrs['LC_COST']
+        if 'LEGACYID' in attrs:
+            del attrs['LEGACYID']
+        if 'LOCATION' in attrs:
+            del attrs['LOCATION']
+        if 'NODE_NO' in attrs:
+            del attrs['NODE_NO']
+        if 'OP_STATUS' in attrs: # Although the operating status is important if you want water, it's likely to change too often and be unmappable
+            del attrs['OP_STATUS']
         if 'PROJECT_NO' in attrs:
             del attrs['PROJECT_NO']
+        if 'STATUS' in attrs:
+            del attrs['STATUS']
         if 'WARR_DATE' in attrs:
             del attrs['WARR_DATE']
 
@@ -119,7 +150,11 @@ def filterTags(attrs):
             del attrs['HYD_TYPE']
             if 'HYD_TYPE2' in attrs:
                 del attrs['HYD_TYPE2']
-
+        
+        if 'HYDRANT_NO' in attrs:
+            tags['ref'] = attrs['HYDRANT_NO']
+            del attrs['HYDRANT_NO']
+        
         if 'MAKE' in attrs:
             tags['manufacturer'] = attrs['MAKE']
             del attrs['MAKE']
