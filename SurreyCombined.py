@@ -7,6 +7,7 @@ Copyright (c) 2011-2012 Paul Norman
 
 
 Layer information
+trnTrafficSignalsSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/58
 wtrHydrantsSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/29
 
 '''
@@ -54,6 +55,16 @@ def filterFeature(ogrfeature, fieldNames, reproject):
     if index >= 0:
         layer = ogrfeature.GetField(index)
         
+    if layer == 'trnTrafficSignalsSHP':
+        index = ogrfeature.GetFieldIndex('STATUS')
+        if index >= 0:
+            if ogrfeature.GetField(index) == 'Proposed':
+                return None
+        index = ogrfeature.GetFieldIndex('CONSTATUS')
+        if index >= 0:
+            if ogrfeature.GetField(index) == 'Proposed':
+                return None
+        
     if layer == 'wtrHydrantsSHP':
         index = ogrfeature.GetFieldIndex('STATUS')
         if index >= 0:
@@ -93,6 +104,80 @@ def filterTags(attrs):
     ''' Delete common useless tags '''
     if 'YTD_COST' in attrs:
             del attrs['YTD_COST']
+    if 'GIS_ES' in attrs:
+        del attrs['GIS_ES']     
+
+    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
+        pass
+        
+    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
+        if 'CONSTATUS' in attrs:
+            del attrs['CONSTATUS']
+        if 'LOCATION' in attrs:
+            del attrs['LOCATION']
+        if 'OPTICOM' in attrs: # No suitable existing tags and not verifible
+            del attrs['OPTICOM']
+        if 'PROJ_NO' in attrs:
+            del attrs['PROJ_NO']
+        if 'RCONTROL' in attrs: # Radio Control
+            del attrs['RCONTROL']
+        if 'STATUS' in attrs:
+            del attrs['STATUS']
+        
+        if 'OWNER' in attrs:
+            if attrs['OWNER'] == 'Provincial':
+                tags['owner'] = 'Ministry of Transport'
+            else:
+                tags['owner'] = attrs['OWNER']
+                
+            del attrs['OWNER']
+            
+        if 'SIGNAL_ID' in attrs:
+            tags['ref'] = attrs['SIGNAL_ID'].strip()
+            del attrs['SIGNAL_ID']
+            
+        if 'SIGTYPE' in attrs:
+            if attrs['SIGTYPE'].strip() == '0':
+                tags['highway'] = 'traffic_signals'
+                tags['traffic_signals'] = 'beacon'
+                if 'COMMENTS' in attrs:
+                    if attrs['COMMENTS'] == 'Red Beacon':
+                        tags['beacon'] = 'stop'
+                    elif attrs['COMMENTS'] == 'Yellow Beacon':
+                        tags['beacon'] = 'yield'
+                    else:
+                        l.error("Unknown COMMENTS=%s in %s" % (attrs['COMMENTS'].strip(), attrs['__LAYER']))
+                        tags['fixme'] = 'yes'
+                    del attrs['COMMENTS']
+            elif attrs['SIGTYPE'].strip() == '1':
+                tags['highway'] = 'traffic_signals'
+                tags['traffic_signals'] = 'emergency'
+            elif attrs['SIGTYPE'].strip() == '2':
+                tags['highway'] = 'traffic_signals'
+                tags['traffic_signals'] = 'pedestrian_only'                
+            elif attrs['SIGTYPE'].strip() == '3':
+                tags['highway'] = 'crossing'
+                tags['crossing'] = 'traffic_signals'
+            elif attrs['SIGTYPE'].strip() == '4':
+                tags['highway'] = 'traffic_signals'
+        
+            else:
+                l.error("Unknown SIGTYPE=%s in %s" % (attrs['SIGTYPE'].strip(), attrs['__LAYER']))
+                tags['fixme'] = 'yes'
+                if 'SIGTYPE2' in attrs:
+                    tags['surrey:SIGTYPE'] = attrs['SIGTYPE2'].strip()
+                else:
+                    tags['surrey:SIGTYPE'] = attrs['SIGTYPE'].strip()
+
+            del attrs['SIGTYPE']
+            if 'SIGTYPE2' in attrs:
+                del attrs['SIGTYPE2']
+            
+        if 'YR' in attrs:
+            if attrs['YR'].strip() != '':
+                tags['start_date'] = attrs['YR'].strip()
+            del attrs['YR']
+                
     if '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
         if 'ANC_YRROLE' in attrs:
             del attrs['ANC_YRROLE']
@@ -112,8 +197,6 @@ def filterTags(attrs):
             del attrs['FACILITYID']
         if 'ENABLED' in attrs:
             del attrs['ENABLED']
-        if 'GIS_ES' in attrs:
-            del attrs['GIS_ES']
         if 'LAST_MAINT' in attrs:
             del attrs['LAST_MAINT']
         if 'LC_COST' in attrs:
@@ -167,6 +250,8 @@ def filterTags(attrs):
             tags['start_date'] = attrs['YR']
             del attrs['YR']
         
-    tags.update(attrs)
+    for k,v in attrs.iteritems():
+        if v.strip() != '' and not k in tags:
+            tags[k]=v
     
     return tags
