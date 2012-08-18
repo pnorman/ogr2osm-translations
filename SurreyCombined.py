@@ -43,6 +43,20 @@ def translateName(rawname):
 	
 	return newName.strip()
 
+def filterFeature(ogrfeature, fieldNames, reproject):
+    if not ogrfeature: return
+    index = ogrfeature.GetFieldIndex('__LAYER')
+    if index >= 0:
+        layer = ogrfeature.GetField(index)
+        
+    if layer == 'wtrHydrantsSHP':
+        index = ogrfeature.GetFieldIndex('STATUS')
+        if index >= 0:
+            if ogrfeature.GetField(index) in ('History', 'For Construction', 'Proposed'):
+                return None
+        
+    return ogrfeature
+
 
 def filterLayer(layer):
     if not layer:
