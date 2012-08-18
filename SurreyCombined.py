@@ -7,6 +7,7 @@ Copyright (c) 2011-2012 Paul Norman
 '''
 
 from osgeo import ogr
+import logging as l
 
 '''
  Some common name conversion functions
