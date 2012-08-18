@@ -102,6 +102,8 @@ def filterTags(attrs):
             del attrs['YTD_COST']
     if 'GIS_ES' in attrs:
         del attrs['GIS_ES']     
+    if 'PROJ_NO' in attrs:
+        del attrs['PROJ_NO']
 
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
         pass
@@ -113,8 +115,6 @@ def filterTags(attrs):
             del attrs['LOCATION']
         if 'OPTICOM' in attrs: # No suitable existing tags and not verifible
             del attrs['OPTICOM']
-        if 'PROJ_NO' in attrs:
-            del attrs['PROJ_NO']
         if 'RCONTROL' in attrs: # Radio Control
             del attrs['RCONTROL']
         if 'STATUS' in attrs:
