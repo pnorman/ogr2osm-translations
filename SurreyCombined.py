@@ -105,7 +105,7 @@ def filterTags(attrs):
     if 'PROJ_NO' in attrs:
         del attrs['PROJ_NO']
 
-    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
+    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
         if 'YR' in attrs:
             if attrs['YR'].strip() != '':
                 tags['start_date'] = attrs['YR'].strip()
@@ -180,10 +180,6 @@ def filterTags(attrs):
     if '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
         if 'ANC_YRROLE' in attrs:
             del attrs['ANC_YRROLE']
-        if 'BV_MANUFAC' in attrs:
-            del attrs['BV_MANUFAC']
-        if 'BV_MODEL' in attrs:
-            del attrs['BV_MODEL']
         if 'COMMENTS' in attrs:
             del attrs['COMMENTS']
         if 'COND_DATE' in attrs:
