@@ -7,6 +7,8 @@ Copyright (c) 2011-2012 Paul Norman
 
 
 Layer information
+trnRoadCentrelinesSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/106
+trnSidewalksSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/105
 trnTrafficSignalsSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/58
 wtrHydrantsSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/29
 
@@ -82,7 +84,6 @@ def filterFeature(ogrfeature, fieldNames, reproject):
                 
     return ogrfeature
 
-
 def filterLayer(layer):
     if not layer: return
     
@@ -117,14 +118,38 @@ def filterTags(attrs):
     if 'LEGACYID' in attrs: del attrs['LEGACYID']
     if 'PROJ_NO' in attrs: del attrs['PROJ_NO']
 
-    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP':     
-        if 'GCNAME' in attrs:
+    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP': 
+        if 'GCROADS' in attrs: del attrs['GCROADS']
+        if 'LEFTFROM' in attrs: del attrs['LEFTFROM']
+        if 'LEFTTO' in attrs: del attrs['LEFTTO']
+        if 'RIGHTFROM' in attrs: del attrs['RIGHTFROM']
+        if 'RIGHTTO' in attrs: del attrs['RIGHTTO']
+        if 'ROW_WIDTH' in attrs: del attrs['ROW_WIDTH']
+        if 'ROADCODE' in attrs: del attrs['ROADCODE']
+        if 'STATUS' in attrs: del attrs['STATUS']
+        
+        if 'GCNAME' in attrs: # Doesn't deal correctly with frontage roads
             tags['name'] =  (attrs['GCNAME'].title() + 
                             (' ' + suffixlookup.get(attrs['GCTYPE'].strip().title(),attrs['GCTYPE'].strip().title()) if 'GCTYPE' in attrs and attrs['GCTYPE'].strip() != '' else '') +
                             (' ' + directionlookup.get(attrs['GCSUFDIR'].strip(), attrs['GCSUFDIR'].strip()) if
                             'GCSUFDIR' in attrs and attrs['GCSUFDIR'].strip() != '' else ''))
             del attrs['GCNAME']
             if 'GCTYPE' in attrs: del attrs['GCTYPE']
+            if 'GCSUFDIR' in attrs: del attrs['GCSUFDIR']
+            if 'ROAD_NAME' in attrs: del attrs['ROAD_NAME']
+            
+        if 'NO_LANE' in attrs:
+            tags['lanes'] = attrs['NO_LANE']
+            del attrs['NO_LANE']
+            
+        if 'SPEED' in attrs:
+            tags['maxspeed'] = attrs['SPEED'].strip()
+            del attrs['SPEED']
+            
+        if 'YR' in attrs:
+            if attrs['YR'].strip() != '':
+                tags['start_date'] = attrs['YR'].strip()
+            del attrs['YR']
         
     elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
         if 'COMMENTS' in attrs: del attrs['COMMENTS']
