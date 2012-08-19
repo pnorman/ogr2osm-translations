@@ -251,11 +251,29 @@ def filterTags(attrs):
                 tags['gritting'] = 'priority_2'
             else:
                 l.error("trnRoadCentrelinesSHP WTR_PRIOR logic fell through")
-                tags['surrey:WTR_PRIOR'] = attrs['WTR_PRIOR']
+                tags['fixme'] = 'yes'
             del attrs['WTR_PRIOR']
             
         if 'TRK_ROUTE' in attrs and attrs['TRK_ROUTE'].strip() != '':
-            pass
+            if attrs['TRK_ROUTE'] == 'Dangerous Goods Routes':
+                tags['hgv'] = 'designated'
+                tags['hazmat'] = 'designated'
+                del attrs['TRK_ROUTE']
+            elif attrs['TRK_ROUTE'] == 'Truck Routes Restrictions':
+                tags['hgv'] = 'no'
+                del attrs['TRK_ROUTE']
+            elif attrs['TRK_ROUTE'] == 'No Heavy Truck Routes':
+                tags['hgv'] = 'no'
+                tags['goods'] = 'yes'
+                del attrs['TRK_ROUTE']
+            elif attrs['TRK_ROUTE'] == 'Truck Routes':
+                tags['hgv'] = 'designated'
+                del attrs['TRK_ROUTE']
+            else:
+                l.error("trnRoadCentrelinesSHP TRK_ROUTE logic fell through")
+                tags['fixme'] = 'yes'
+                
+            
         '''
         Clean up attributes used above
         '''
