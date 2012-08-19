@@ -5,6 +5,7 @@ See https://github.com/pnorman/SurreyCombinedAuto for related scripts
 
 Copyright (c) 2011-2012 Paul Norman
 
+This translation deletes attributes from attrs as it uses them then looks at the end result. This allows easier detection of tagging changes in the source data.
 
 Layer information
 trnRoadCentrelinesSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/106
@@ -36,7 +37,8 @@ suffixlookup = {
     'Rwy':'Railway',
     'Div':'Diversion',
     'Hwy':'Highway',
-    'Hwy':'Highway'
+    'Hwy':'Highway',
+    'Fg':'Frontage Road'
 }
 directionlookup = {
     'E':'East',
@@ -119,27 +121,42 @@ def filterTags(attrs):
     if 'PROJ_NO' in attrs: del attrs['PROJ_NO']
 
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP': 
+        if 'COMMENTS' in attrs: del attrs['COMMENTS']
+        if 'DATECLOSED' in attrs: del attrs['DATECLOSED']
+        if 'DATECONST' in attrs: del attrs['DATECONST']
+        if 'DESIGNTN' in attrs: del attrs['DESIGNTN']
+        if 'DISR_ROUTE' in attrs: del attrs['DISR_ROUTE']
         if 'GCROADS' in attrs: del attrs['GCROADS']
+        if 'GREENWAY' in attrs: del attrs['GREENWAY']
         if 'LEFTFROM' in attrs: del attrs['LEFTFROM']
         if 'LEFTTO' in attrs: del attrs['LEFTTO']
         if 'RIGHTFROM' in attrs: del attrs['RIGHTFROM']
         if 'RIGHTTO' in attrs: del attrs['RIGHTTO']
         if 'ROW_WIDTH' in attrs: del attrs['ROW_WIDTH']
         if 'ROADCODE' in attrs: del attrs['ROADCODE']
+        if 'SNW_RTEZON' in attrs: del attrs['SNW_RTEZON']
         if 'STATUS' in attrs: del attrs['STATUS']
+        if 'WTR_VEHCL' in attrs: del attrs['WTR_VEHCL'] #Not really relevant
         
-        if 'GCNAME' in attrs: # Doesn't deal correctly with frontage roads
-            tags['name'] =  (attrs['GCNAME'].title() + 
-                            (' ' + suffixlookup.get(attrs['GCTYPE'].strip().title(),attrs['GCTYPE'].strip().title()) if 'GCTYPE' in attrs and attrs['GCTYPE'].strip() != '' else '') +
-                            (' ' + directionlookup.get(attrs['GCSUFDIR'].strip(), attrs['GCSUFDIR'].strip()) if
-                            'GCSUFDIR' in attrs and attrs['GCSUFDIR'].strip() != '' else ''))
-            del attrs['GCNAME']
-            if 'GCTYPE' in attrs: del attrs['GCTYPE']
-            if 'GCSUFDIR' in attrs: del attrs['GCSUFDIR']
-            if 'ROAD_NAME' in attrs: del attrs['ROAD_NAME']
+        if 'GCNAME' in attrs:
+        
+            '''
+            Build the name of the road from the name, road type and direction.
+            Frontage roads need to be special-cased
+            '''
+            if 'GCTYPE' in attrs and attrs['GCTYPE'].upper() == 'FG' and 'ROAD_NAME' in attrs:
+                tags['name'] = ''
+                for part in attrs['ROAD_NAME'].title().split():
+                    tags['name'] += ' ' + suffixlookup.get(directionlookup.get(part,part),directionlookup.get(part,part))
+            else:
+                tags['name'] =  (attrs['GCNAME'].title() + 
+                            (' ' + suffixlookup.get(attrs['GCTYPE'].strip().title(),attrs['GCTYPE'].strip().title()) 
+                            if 'GCTYPE' in attrs and attrs['GCTYPE'].strip() != '' else '') +
+                            (' ' + directionlookup.get(attrs['GCSUFDIR'].strip(), attrs['GCSUFDIR'].strip()) 
+                            if 'GCSUFDIR' in attrs and attrs['GCSUFDIR'].strip() != '' else ''))
             
         if 'NO_LANE' in attrs:
-            tags['lanes'] = attrs['NO_LANE']
+            tags['lanes'] = attrs['NO_LANE'].strip()
             del attrs['NO_LANE']
             
         if 'SPEED' in attrs:
@@ -150,6 +167,106 @@ def filterTags(attrs):
             if attrs['YR'].strip() != '':
                 tags['start_date'] = attrs['YR'].strip()
             del attrs['YR']
+        
+        if 'RC_TYPE' in attrs:
+            if attrs['RC_TYPE'].strip() == '0': # Normal roads
+                del attrs['RC_TYPE']
+                if 'RC_TYPE2' in attrs: del attrs['RC_TYPE2']
+                if 'MATERIAL' in attrs:
+                    tags['surface'] = attrs['MATERIAL'].lower()
+                    del attrs['MATERIAL']
+                if 'RD_CLASS' in attrs and attrs['RD_CLASS'] == 'Local':
+                    tags['highway'] = 'residential'
+                    del attrs['RD_CLASS']
+                elif 'RD_CLASS' in attrs and attrs['RD_CLASS'] == 'Major Collector':
+                    tags['highway'] = 'tertiary'
+                    del attrs['RD_CLASS']
+                elif 'RD_CLASS' in attrs and attrs['RD_CLASS'] == 'Arterial':
+                    if 'ROAD_NAME' in attrs and attrs['ROAD_NAME'] in ('King George Blvd', 'Fraser Hwy'):
+                        tags['highway'] = 'primary'
+                    else:
+                        if 'MRN' in attrs and attrs['MRN'] == 'Yes':
+                            tags['highway'] = 'secondary'
+                        else:
+                            tags['highway'] = 'tertiary'
+                    del attrs['RD_CLASS']
+                elif 'RD_CLASS' in attrs and attrs['RD_CLASS'] == 'Provincial Highway':
+                    # Special-case motorways
+                    if 'ROAD_NAME' in attrs and attrs['ROAD_NAME'] in ('No 1 Hwy', 'No 99 Hwy'):
+                        tags['highway'] = 'motorway'
+                    else:
+                        tags['highway'] = 'primary'
+                    del attrs['RD_CLASS']
+                elif 'RD_CLASS' in attrs and attrs['RD_CLASS'] == 'Translink':
+                    tags['highway'] = 'unclassified'
+                    del attrs['RD_CLASS']
+                else:
+                    l.error("trnRoadCentrelinesSHP RC_TYPE=0 logic fell through")
+                    tags['fixme'] = 'yes'
+                    tags['highway'] = 'road'
+            elif attrs['RC_TYPE'].strip() == '1': # Frontage roads
+                del attrs['RC_TYPE']
+                if 'RC_TYPE2' in attrs: del attrs['RC_TYPE2']
+                if 'MATERIAL' in attrs:
+                    tags['surface'] = attrs['MATERIAL'].lower()
+                    del attrs['MATERIAL']
+                tags['highway'] = 'residential'
+            elif attrs['RC_TYPE'].strip() == '2': # Highway Interchange
+                del attrs['RC_TYPE']
+                if 'RC_TYPE2' in attrs: del attrs['RC_TYPE2']
+                if 'MATERIAL' in attrs:
+                    tags['surface'] = attrs['MATERIAL'].lower()
+                    del attrs['MATERIAL']
+                tags['highway'] = 'motorway_link'
+            elif attrs['RC_TYPE'].strip() == '3': # Street Lane
+                del attrs['RC_TYPE']
+                if 'RC_TYPE2' in attrs: del attrs['RC_TYPE2']
+                if 'MATERIAL' in attrs:
+                    tags['surface'] = attrs['MATERIAL'].lower()
+                    del attrs['MATERIAL']
+                tags['highway'] = 'service'
+            elif attrs['RC_TYPE'].strip() == '4': # Access lane
+                del attrs['RC_TYPE']
+                if 'RC_TYPE2' in attrs: del attrs['RC_TYPE2']
+                if 'MATERIAL' in attrs:
+                    tags['surface'] = attrs['MATERIAL'].lower()
+                    del attrs['MATERIAL']
+                if 'OWNER' in attrs and attrs['OWNER'] == 'Private':
+                    tags['highway'] = 'residential'
+                else:
+                    tags['highway'] = 'service'
+            elif attrs['RC_TYPE'].strip() == '5': # Railway
+                del attrs['RC_TYPE']
+                if 'RC_TYPE2' in attrs: del attrs['RC_TYPE2']        
+                tags['railway'] = 'rail'
+                if 'MATERIAL' in attrs: del attrs['MATERIAL']
+        
+        ''' Gritting '''
+        if 'WTR_PRIOR' in attrs and attrs['WTR_PRIOR'].strip() != '':
+            if 'First' in attrs['WTR_PRIOR']:
+                tags['maintenance'] = 'gritting'
+                tags['gritting'] = 'priority_1'
+            elif 'Second' in attrs['WTR_PRIOR']:
+                tags['maintenance'] = 'gritting'
+                tags['gritting'] = 'priority_2'
+            else:
+                l.error("trnRoadCentrelinesSHP WTR_PRIOR logic fell through")
+                tags['surrey:WTR_PRIOR'] = attrs['WTR_PRIOR']
+            del attrs['WTR_PRIOR']
+            
+        if 'TRK_ROUTE' in attrs and attrs['TRK_ROUTE'].strip() != '':
+            pass
+        '''
+        Clean up attributes used above
+        '''
+        if 'GCNAME' in attrs: del attrs['GCNAME']
+        if 'GCTYPE' in attrs: del attrs['GCTYPE']
+        if 'GCSUFDIR' in attrs: del attrs['GCSUFDIR']
+        if 'OWNER' in attrs: del attrs['OWNER']
+        if 'ROAD_NAME' in attrs: del attrs['ROAD_NAME']
+        if 'RD_CLASS' in attrs: del attrs['RD_CLASS']
+        if 'MRN' in attrs: del attrs['MRN']
+
         
     elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
         if 'COMMENTS' in attrs: del attrs['COMMENTS']
@@ -324,6 +441,6 @@ def filterTags(attrs):
         
     for k,v in attrs.iteritems():
         if v.strip() != '' and not k in tags:
-            tags[k]=v.strip()
+            tags[k]=v
     
     return tags
