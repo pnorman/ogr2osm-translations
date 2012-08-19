@@ -60,13 +60,24 @@ def filterFeature(ogrfeature, fieldNames, reproject):
     index = ogrfeature.GetFieldIndex('__LAYER')
     if index >= 0:
         layer = ogrfeature.GetField(index)
-        
+
     if layer == 'trnTrafficSignalsSHP':
         index = ogrfeature.GetFieldIndex('CONSTATUS')
         if index >= 0:
             if ogrfeature.GetField(index) == 'Proposed':
                 return None
+
         
+    if layer == 'trnSidewalksSHP':
+        index = ogrfeature.GetFieldIndex('DESIGNTN')
+        if index >= 0 and ogrfeature.GetField(index) is None:
+            index = ogrfeature.GetFieldIndex('GREENWAY')
+            if index >= 0:
+                if ogrfeature.GetField(index) == 'No':
+                    return None
+                
+
+                
     return ogrfeature
 
 
@@ -99,18 +110,89 @@ def filterTags(attrs):
 
     ''' Delete common useless tags '''
     if 'YTD_COST' in attrs:
-            del attrs['YTD_COST']
+        del attrs['YTD_COST']
     if 'GIS_ES' in attrs:
         del attrs['GIS_ES']     
+    if 'LC_COST' in attrs:
+        del attrs['LC_COST']
+    if 'LEGACYID' in attrs:
+        del attrs['LEGACYID']
     if 'PROJ_NO' in attrs:
         del attrs['PROJ_NO']
 
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
+        if 'COMMENTS' in attrs:
+            del attrs['COMMENTS']
+        if 'STATUS' in attrs:
+            del attrs['STATUS']
+        if 'LOCATION' in attrs:
+            del attrs['LOCATION']
+        
+        if 'MATERIAL' in attrs and attrs['MATERIAL'].strip() != '':
+            if attrs['MATERIAL'] == 'Asphalt':
+                tags['surface'] = 'asphalt'
+            elif attrs['MATERIAL'] == 'Concrete':
+                tags['surface'] = 'concrete'
+            elif attrs['MATERIAL'] == 'Limestone':
+                tags['surface'] = 'gravel'
+                tags['gravel'] = 'limestone'
+            else:
+                l.error("Unknown MATERIAL=%s in %s" % (attrs['MATERIAL'].strip(), attrs['__LAYER']))
+                tags['fixme'] = 'yes'
+            del attrs['MATERIAL']
+            
+        if 'WIDTH' in attrs:
+            if attrs['WIDTH'].strip().rstrip('0').rstrip('.') != '':
+                tags['width'] = attrs['WIDTH'].strip().rstrip('0').rstrip('.')
+            del attrs['WIDTH']
         if 'YR' in attrs:
             if attrs['YR'].strip() != '':
                 tags['start_date'] = attrs['YR'].strip()
             del attrs['YR']
-        
+            
+        if 'GREENWAY' in attrs and attrs['GREENWAY'].strip() == 'Yes':
+            
+            if 'DESIGNTN' in attrs and attrs['DESIGNTN'].strip() == 'Commercial':
+                tags['highway'] = 'footway'
+                tags['footway'] = 'sidewalk'
+            elif 'DESIGNTN' in attrs and attrs['DESIGNTN'].strip() == 'Land Development':
+                tags['highway'] = 'footway'
+                tags['footway'] = 'sidewalk'
+            elif 'DESIGNTN' in attrs and attrs['DESIGNTN'].strip() == 'Residential':
+                tags['highway'] = 'footway'
+            else:
+                l.error("trnSidewalksSHP GREENWAY=Yes logic fell through")
+                tags['fixme'] = 'yes'
+                
+            del attrs['GREENWAY']
+            if 'DESIGNTN' in attrs:
+                del attrs['DESIGNTN']
+            if 'OWNER' in attrs:
+                del attrs['OWNER']
+        else:
+            if 'GREENWAY' in attrs:
+                del attrs['GREENWAY']
+                
+            if 'OWNER' in attrs and attrs['OWNER'].strip() == 'Private':
+                if 'DESIGNTN' in attrs and attrs['DESIGNTN'] == 'Commercial':
+                    tags['highway'] = 'footway'
+                    tags['footway'] = 'sidewalk'
+                elif 'DESIGNTN' in attrs and attrs['DESIGNTN'] == 'Residential':
+                    tags['highway'] = 'footway'
+                else:
+                    l.error("trnSidewalksSHP OWNER=Private logic fell through")
+                    tags['fixme'] = 'yes'
+            else:
+                tags['highway'] = 'footway'
+                tags['footway'] = 'sidewalk'
+            if 'OWNER' in attrs:
+                del attrs['OWNER']
+            if 'DESIGNTN' in attrs:
+                del attrs['DESIGNTN']
+                
+            
+            
+            
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
         if 'CONSTATUS' in attrs:
             del attrs['CONSTATUS']
@@ -128,7 +210,6 @@ def filterTags(attrs):
                 tags['owner'] = 'Ministry of Transport'
             else:
                 tags['owner'] = attrs['OWNER']
-                
             del attrs['OWNER']
             
         if 'SIGNAL_ID' in attrs:
@@ -176,7 +257,7 @@ def filterTags(attrs):
             if attrs['YR'].strip() != '':
                 tags['start_date'] = attrs['YR'].strip()
             del attrs['YR']
-                
+    
     if '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
         if 'ANC_YRROLE' in attrs:
             del attrs['ANC_YRROLE']
@@ -194,10 +275,6 @@ def filterTags(attrs):
             del attrs['ENABLED']
         if 'LAST_MAINT' in attrs:
             del attrs['LAST_MAINT']
-        if 'LC_COST' in attrs:
-            del attrs['LC_COST']
-        if 'LEGACYID' in attrs:
-            del attrs['LEGACYID']
         if 'LOCATION' in attrs:
             del attrs['LOCATION']
         if 'NODE_NO' in attrs:
