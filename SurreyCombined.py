@@ -34,7 +34,9 @@ suffixlookup = {
     'Rwy':'Railway',
     'Div':'Diversion',
     'Hwy':'Highway',
-    'Hwy':'Highway',
+    'Hwy':'Highway'
+}
+directionlookup = {
     'E':'East',
     'S':'South',
     'N':'North',
@@ -120,7 +122,16 @@ def filterTags(attrs):
     if 'PROJ_NO' in attrs:
         del attrs['PROJ_NO']
 
-    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
+    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP':     
+        if 'GCNAME' in attrs:
+            tags['name'] =  (attrs['GCNAME'].title() + 
+                            (' ' + suffixlookup.get(attrs['GCTYPE'].strip().title(),attrs['GCTYPE'].strip().title()) if 'GCTYPE' in attrs and attrs['GCTYPE'].strip() != '' else '') +
+                            (' ' + directionlookup.get(attrs['GCSUFDIR'].strip(), attrs['GCSUFDIR'].strip()) if
+                            'GCSUFDIR' in attrs and attrs['GCSUFDIR'].strip() != '' else ''))
+            del attrs['GCNAME']
+            if 'GCTYPE' in attrs: del attrs['GCTYPE']
+        
+    elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
         if 'COMMENTS' in attrs:
             del attrs['COMMENTS']
         if 'STATUS' in attrs:
@@ -189,11 +200,8 @@ def filterTags(attrs):
                 del attrs['OWNER']
             if 'DESIGNTN' in attrs:
                 del attrs['DESIGNTN']
-                
-            
-            
-            
-    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
+
+    elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
         if 'CONSTATUS' in attrs:
             del attrs['CONSTATUS']
         if 'LOCATION' in attrs:
@@ -258,7 +266,7 @@ def filterTags(attrs):
                 tags['start_date'] = attrs['YR'].strip()
             del attrs['YR']
     
-    if '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
+    elif '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
         if 'ANC_YRROLE' in attrs:
             del attrs['ANC_YRROLE']
         if 'COMMENTS' in attrs:
@@ -324,6 +332,6 @@ def filterTags(attrs):
         
     for k,v in attrs.iteritems():
         if v.strip() != '' and not k in tags:
-            tags[k]=v
+            tags[k]=v.strip()
     
     return tags
