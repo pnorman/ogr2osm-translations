@@ -111,16 +111,11 @@ def filterTags(attrs):
     tags = {}
 
     ''' Delete common useless tags '''
-    if 'YTD_COST' in attrs:
-        del attrs['YTD_COST']
-    if 'GIS_ES' in attrs:
-        del attrs['GIS_ES']     
-    if 'LC_COST' in attrs:
-        del attrs['LC_COST']
-    if 'LEGACYID' in attrs:
-        del attrs['LEGACYID']
-    if 'PROJ_NO' in attrs:
-        del attrs['PROJ_NO']
+    if 'YTD_COST' in attrs: del attrs['YTD_COST']
+    if 'GIS_ES' in attrs: del attrs['GIS_ES']     
+    if 'LC_COST' in attrs: del attrs['LC_COST']
+    if 'LEGACYID' in attrs: del attrs['LEGACYID']
+    if 'PROJ_NO' in attrs: del attrs['PROJ_NO']
 
     if '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP':     
         if 'GCNAME' in attrs:
@@ -132,12 +127,9 @@ def filterTags(attrs):
             if 'GCTYPE' in attrs: del attrs['GCTYPE']
         
     elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnSidewalksSHP':  
-        if 'COMMENTS' in attrs:
-            del attrs['COMMENTS']
-        if 'STATUS' in attrs:
-            del attrs['STATUS']
-        if 'LOCATION' in attrs:
-            del attrs['LOCATION']
+        if 'COMMENTS' in attrs: del attrs['COMMENTS']
+        if 'STATUS' in attrs: del attrs['STATUS']
+        if 'LOCATION' in attrs: del attrs['LOCATION']
         
         if 'MATERIAL' in attrs and attrs['MATERIAL'].strip() != '':
             if attrs['MATERIAL'] == 'Asphalt':
@@ -176,13 +168,10 @@ def filterTags(attrs):
                 tags['fixme'] = 'yes'
                 
             del attrs['GREENWAY']
-            if 'DESIGNTN' in attrs:
-                del attrs['DESIGNTN']
-            if 'OWNER' in attrs:
-                del attrs['OWNER']
+            if 'DESIGNTN' in attrs: del attrs['DESIGNTN']
+            if 'OWNER' in attrs: del attrs['OWNER']
         else:
-            if 'GREENWAY' in attrs:
-                del attrs['GREENWAY']
+            if 'GREENWAY' in attrs: del attrs['GREENWAY']
                 
             if 'OWNER' in attrs and attrs['OWNER'].strip() == 'Private':
                 if 'DESIGNTN' in attrs and attrs['DESIGNTN'] == 'Commercial':
@@ -196,22 +185,15 @@ def filterTags(attrs):
             else:
                 tags['highway'] = 'footway'
                 tags['footway'] = 'sidewalk'
-            if 'OWNER' in attrs:
-                del attrs['OWNER']
-            if 'DESIGNTN' in attrs:
-                del attrs['DESIGNTN']
+            if 'OWNER' in attrs: del attrs['OWNER']
+            if 'DESIGNTN' in attrs: del attrs['DESIGNTN']
 
     elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnTrafficSignalsSHP':  
-        if 'CONSTATUS' in attrs:
-            del attrs['CONSTATUS']
-        if 'LOCATION' in attrs:
-            del attrs['LOCATION']
-        if 'OPTICOM' in attrs: # No suitable existing tags and not verifible
-            del attrs['OPTICOM']
-        if 'RCONTROL' in attrs: # Radio Control
-            del attrs['RCONTROL']
-        if 'STATUS' in attrs:
-            del attrs['STATUS']
+        if 'CONSTATUS' in attrs: del attrs['CONSTATUS']
+        if 'LOCATION' in attrs: del attrs['LOCATION']
+        if 'OPTICOM' in attrs: del attrs['OPTICOM'] # No suitable existing tags and not verifible
+        if 'RCONTROL' in attrs: del attrs['RCONTROL'] # Radio Control
+        if 'STATUS' in attrs: del attrs['STATUS']
         
         if 'OWNER' in attrs:
             if attrs['OWNER'] == 'Provincial':
@@ -267,34 +249,20 @@ def filterTags(attrs):
             del attrs['YR']
     
     elif '__LAYER' in attrs and attrs['__LAYER'] == 'wtrHydrantsSHP':
-        if 'ANC_YRROLE' in attrs:
-            del attrs['ANC_YRROLE']
-        if 'COMMENTS' in attrs:
-            del attrs['COMMENTS']
-        if 'COND_DATE' in attrs:
-            del attrs['COND_DATE']
-        if 'CONDITION' in attrs:
-            del attrs['CONDITION']
-        if 'DIS2VALVE' in attrs: # Distance to valve
-            del attrs['DIS2VALVE']
-        if 'FACILITYID' in attrs:
-            del attrs['FACILITYID']
-        if 'ENABLED' in attrs:
-            del attrs['ENABLED']
-        if 'LAST_MAINT' in attrs:
-            del attrs['LAST_MAINT']
-        if 'LOCATION' in attrs:
-            del attrs['LOCATION']
-        if 'NODE_NO' in attrs:
-            del attrs['NODE_NO']
-        if 'OP_STATUS' in attrs: # Although the operating status is important if you want water, it's likely to change too often and be unmappable
-            del attrs['OP_STATUS']
-        if 'PROJECT_NO' in attrs:
-            del attrs['PROJECT_NO']
-        if 'STATUS' in attrs:
-            del attrs['STATUS']
-        if 'WARR_DATE' in attrs:
-            del attrs['WARR_DATE']
+        if 'ANC_YRROLE' in attrs: del attrs['ANC_YRROLE']
+        if 'COMMENTS' in attrs: del attrs['COMMENTS']
+        if 'COND_DATE' in attrs: del attrs['COND_DATE']
+        if 'CONDITION' in attrs: del attrs['CONDITION']
+        if 'DIS2VALVE' in attrs: del attrs['DIS2VALVE'] # Distance to valve
+        if 'FACILITYID' in attrs: del attrs['FACILITYID']
+        if 'ENABLED' in attrs: del attrs['ENABLED']
+        if 'LAST_MAINT' in attrs: del attrs['LAST_MAINT']
+        if 'LOCATION' in attrs: del attrs['LOCATION']
+        if 'NODE_NO' in attrs: del attrs['NODE_NO']
+        if 'OP_STATUS' in attrs: del attrs['OP_STATUS']# Although the operating status is important if you want water, it's likely to change too often and be unmappable
+        if 'PROJECT_NO' in attrs: del attrs['PROJECT_NO']
+        if 'STATUS' in attrs: del attrs['STATUS']
+        if 'WARR_DATE' in attrs: del attrs['WARR_DATE']
 
         tags['emergency'] = 'fire_hydrant'
 
@@ -311,8 +279,7 @@ def filterTags(attrs):
                 else:
                     tags['surrey:HYD_TYPE'] = attrs['HYD_TYPE'].strip()
             del attrs['HYD_TYPE']
-            if 'HYD_TYPE2' in attrs:
-                del attrs['HYD_TYPE2']
+            if 'HYD_TYPE2' in attrs: del attrs['HYD_TYPE2']
         
         if 'HYDRANT_NO' in attrs:
             tags['ref'] = attrs['HYDRANT_NO']
