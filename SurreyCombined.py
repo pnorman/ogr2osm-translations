@@ -8,6 +8,7 @@ Copyright (c) 2011-2012 Paul Norman
 This translation deletes attributes from attrs as it uses them then looks at the end result. This allows easier detection of tagging changes in the source data.
 
 Layer information
+trnPolesSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/56
 trnRoadCentrelinesSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/106
 trnSidewalksSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/105
 trnTrafficSignalsSHP: http://cosmosbeta.surrey.ca/COSREST/rest/services/Public/MapServer/58
@@ -67,6 +68,45 @@ def filterFeature(ogrfeature, fieldNames, reproject):
     if index >= 0:
         layer = ogrfeature.GetField(index)
 
+    if layer == 'trnPolesSHP':
+        POLE_TYPE2 = ogrfeature.GetField(ogrfeature.GetFieldIndex('POLE_TYPE2'))
+        LUM_STYLE = ogrfeature.GetField(ogrfeature.GetFieldIndex('LUM_STYLE'))
+        if POLE_TYPE2 == 'Overhead Sign Pole':
+            '''
+            These are poles letting you know stuff like turn right for highway 15
+            '''
+            if LUM_STYLE is None or LUM_STYLE == 'Specialty':
+                return None
+            
+        elif POLE_TYPE2 == 'Push Button':
+            '''
+            Poles with signal buttons without lights or power lines on them.
+            '''
+            return None
+        elif POLE_TYPE2 == 'Secondary Signal Pole':
+            '''
+            Poles with signal buttons without lights or power lines on them.
+            '''
+            if LUM_STYLE is None:
+                return None
+        elif POLE_TYPE2 == 'Primary Signal Pole':
+            '''
+            Poles with signal buttons without lights or power lines on them.
+            '''
+            if LUM_STYLE is None or LUM_STYLE == 'Traditionaire':
+                return None
+        elif POLE_TYPE2 == 'Sign Bridge':
+            '''
+            The sign bridges on King George 
+            '''
+            return None
+        elif POLE_TYPE2 == 'Stand Alone Service Base':
+            '''
+            Not a pole at all
+            '''
+            return None
+
+    
     if layer == 'trnTrafficSignalsSHP':
         index = ogrfeature.GetFieldIndex('CONSTATUS')
         if index >= 0:
@@ -120,7 +160,113 @@ def filterTags(attrs):
     if 'LEGACYID' in attrs: del attrs['LEGACYID']
     if 'PROJ_NO' in attrs: del attrs['PROJ_NO']
 
-    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP': 
+    if '__LAYER' in attrs and attrs['__LAYER'] == 'trnPolesSHP': 
+        if 'CP_ANTEN' in attrs: del attrs['CP_ANTEN']       # Cell phone antenna. never Yes
+        if 'LOCATION' in attrs: del attrs['LOCATION']
+        if 'MAP_NO' in attrs: del attrs['MAP_NO']
+        if 'PAINTDATE' in attrs: del attrs['PAINTDATE']     # Unverifible
+        if 'PHASE' in attrs: del attrs['PHASE']             # Unverifible
+        if 'POLE_INST' in attrs: del attrs['POLE_INST']     # Unverifible
+        if 'RL_ZONE' in attrs: del attrs['RL_ZONE']         # Relamp zone
+        if 'SL_STATUS' in attrs: del attrs['SL_STATUS']     # relamp information
+        if 'SPACING' in attrs: del attrs['SPACING']         # Spacing, duplicates geodata
+        if 'SPAC_TYPE' in attrs: del attrs['SPAC_TYPE']     # Spacing type, duplicates geodata
+        if 'SUR_ID_AVE' in attrs: del attrs['SUR_ID_AVE']   # Geodata
+        if 'SUR_ID_ST' in attrs: del attrs['SUR_ID_ST']     # Geodata
+        if 'SURREYID' in attrs: del attrs['SURREYID']       # Geodata
+
+        if 'COLOUR' in attrs and attrs['COLOUR'].strip() != '':
+            tags['colour'] = attrs['COLOUR'].lower()
+            del attrs['COLOUR']
+            
+        if 'POLE_HT' in attrs:
+            if attrs['POLE_HT'].strip().strip('0').rstrip('.') != '': 
+                ''' Reject blank heights and heights of 0 '''
+                tags['height'] = str(round(float(attrs['POLE_HT'].strip()),3))
+            del attrs['POLE_HT']
+
+        if 'POLE_NO' in attrs and attrs['POLE_NO'].strip() != '':
+            tags['ref'] = attrs['POLE_NO']
+            del attrs['POLE_NO']
+        
+        if 'YR' in attrs and attrs['YR'].strip() != '':
+            tags['start_date'] = attrs['YR'].strip()
+            del attrs['YR']        
+        
+        if 'LAMP_TYPE' in attrs and attrs['LAMP_TYPE'] != '':
+            if attrs['LAMP_TYPE'] == 'High Pressure Sodium':
+                tags['lamp_type'] = 'sodium'
+                del attrs['LAMP_TYPE']
+            elif attrs['LAMP_TYPE'] == 'LED':
+                tags['lamp_type'] = 'led'
+                del attrs['LAMP_TYPE']
+            elif attrs['LAMP_TYPE'] == 'Metal Halide':
+                tags['lamp_type'] = 'metal_halide'
+                del attrs['LAMP_TYPE']
+            elif attrs['LAMP_TYPE'] == 'Special Lighting (Other)':
+                del attrs['LAMP_TYPE']
+            else:
+                l.error("trnPolesSHP LAMP_TYPE logic fell through")
+                tags['fixme'] = 'yes'
+                
+        if 'MATERIAL' in attrs and attrs['MATERIAL'] != '':    
+            tags['material'] = attrs['MATERIAL'].lower()
+            del attrs['MATERIAL']
+            
+        if 'POLE_SHAPE' in attrs and attrs['POLE_SHAPE'] != '':
+            tags['pole:shape'] = attrs['POLE_SHAPE']
+            del attrs['POLE_SHAPE']
+            
+        if 'POLE_TYPE2' in attrs:
+            if attrs['POLE_TYPE2'] == 'Hydro with Lights':
+                '''
+                Type 0
+                The poles with the wrong numerical value set are still hydro with lights
+                '''
+                tags['highway'] = 'street_lamp'
+                tags['power'] = 'pole'
+                del attrs['POLE_TYPE2']
+            elif attrs['POLE_TYPE2'] == 'Overhead Sign Pole':
+                '''
+                Type 1
+                OSPs without lights have been filtered out already
+                '''
+                tags['highway'] = 'street_lamp'
+                del attrs['POLE_TYPE2']
+            elif attrs['POLE_TYPE2'] == 'Primary Signal Pole':
+                '''
+                Type 2
+                Poles without lights have been filtered
+                '''
+                tags['highway'] = 'street_lamp'
+                del attrs['POLE_TYPE2']
+            elif attrs['POLE_TYPE2'] == 'Private Property Light':
+                '''
+                Type 3
+                On private property normally
+                '''
+                tags['highway'] = 'street_lamp'
+                del attrs['POLE_TYPE2']
+            elif attrs['POLE_TYPE2'] == 'Secondary Signal Pole':
+                '''
+                Type 5
+                '''
+                tags['highway'] = 'street_lamp'
+                del attrs['POLE_TYPE2']
+            elif attrs['POLE_TYPE2'] == 'Streetlight':
+                '''
+                Type 8
+                '''
+                tags['highway'] = 'street_lamp'
+            elif attrs['POLE_TYPE2'] == 'Streetlight with Service Base':
+                '''
+                Type 9
+                '''
+                tags['highway'] = 'street_lamp'
+                
+            
+            
+    elif '__LAYER' in attrs and attrs['__LAYER'] == 'trnRoadCentrelinesSHP': 
         if 'COMMENTS' in attrs: del attrs['COMMENTS']
         if 'DATECLOSED' in attrs: del attrs['DATECLOSED']
         if 'DATECONST' in attrs: del attrs['DATECONST']
