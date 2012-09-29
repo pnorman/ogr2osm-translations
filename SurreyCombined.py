@@ -55,6 +55,26 @@ def translateName(rawname):
 		newName = newName + ' ' + suffixlookup.get(partName,partName)
 	
 	return newName.strip()
+    
+def filterLayer(layer):
+    if not layer: return
+    
+    layername = layer.GetName()
+    
+    '''
+    Add a new field indicating the current layer
+    '''
+    field = ogr.FieldDefn('__LAYER', ogr.OFTString)
+    field.SetWidth(len(layername))
+    layer.CreateField(field)
+    
+    for j in range(layer.GetFeatureCount()):
+        ogrfeature = layer.GetNextFeature()
+        ogrfeature.SetField('__LAYER', layername)
+        layer.SetFeature(ogrfeature)
+    
+    layer.ResetReading()
+    return layer
 
 def filterFeature(ogrfeature, fieldNames, reproject):
     if not ogrfeature: return
@@ -125,26 +145,6 @@ def filterFeature(ogrfeature, fieldNames, reproject):
 
                 
     return ogrfeature
-
-def filterLayer(layer):
-    if not layer: return
-    
-    layername = layer.GetName()
-    
-    '''
-    Add a new field indicating the current layer
-    '''
-    field = ogr.FieldDefn('__LAYER', ogr.OFTString)
-    field.SetWidth(len(layername))
-    layer.CreateField(field)
-    
-    for j in range(layer.GetFeatureCount()):
-        ogrfeature = layer.GetNextFeature()
-        ogrfeature.SetField('__LAYER', layername)
-        layer.SetFeature(ogrfeature)
-    
-    layer.ResetReading()
-    return layer
 
 '''
 Map Surrey -> OSM
