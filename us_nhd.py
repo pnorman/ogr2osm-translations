@@ -167,7 +167,7 @@ def filterLayer(layer):
     '''
     if layername not in ('NHDArea', 'NHDAreaEventFC', 'NHDFlowline', 'NHDLine', 
                     'NHDLineEventFC', 'NHDPoint', 'NHDPointEventFC', 'NHDWaterbody'):
-        print 'Unknown layer ' + layer.GetName()
+        print 'Unknown layer ' + layername
     
     '''
     Add a new field indicating the current layer
