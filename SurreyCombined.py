@@ -588,19 +588,19 @@ def filterTags(attrs):
             if 'HYD_TYPE2' in attrs: del attrs['HYD_TYPE2']
         
         if 'HYDRANT_NO' in attrs:
-            tags['ref'] = attrs['HYDRANT_NO']
+            tags['ref'] = attrs['HYDRANT_NO'].strip()
             del attrs['HYDRANT_NO']
         
         if 'MAKE' in attrs:
-            tags['manufacturer'] = attrs['MAKE']
+            tags['manufacturer'] = attrs['MAKE'].strip()
             del attrs['MAKE']
                 
         if 'OWNER' in attrs:
-            tags['owner'] = attrs['OWNER']
+            tags['owner'] = attrs['OWNER'].strip()
             del attrs['OWNER']
         
         if 'YR' in attrs:
-            tags['start_date'] = attrs['YR']
+            tags['start_date'] = attrs['YR'].strip()
             del attrs['YR']
         
     for k,v in attrs.iteritems():
