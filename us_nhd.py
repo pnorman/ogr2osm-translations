@@ -115,6 +115,7 @@ NHDWaterbody
 43613   RESERVOIR       n=water water=pond pond=storage
 43614   RESERVOIR       n=water water=pond              in 0310 these are used for all ponds not just storage ponds?
 43617   RESERVOIR       n=water water=pond              as in 43614
+43624   RESERVOIR       n=water water=pond pond=treatment
 46600   SWAMP/MARSH     n=wetland 
 46601   SWAMP/MARSH     n=wetland intermittent=yes
 46602   SWAMP/MARSH     n=wetland
@@ -411,5 +412,10 @@ def filterTags(attrs):
     '''
     Code is required to handle monitoring stations 
     '''
+    if 'EventType' in attrs and attrs['EventType'] != '':
+        if attrs['__LAYER'] == 'NHDPointEventFC':
+            if attrs['EventType'] == '2':
+                tags['waterway'] = 'dam'
+            
     return tags
     
