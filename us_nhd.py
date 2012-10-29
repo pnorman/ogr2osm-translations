@@ -80,6 +80,7 @@ NHDLine
 41100   NONEARTHERN SHORE   delete        
 43100   RAPIDS          
 50302   SOUNDING DATUM LINE delete
+48300   Wall            barrier=wall
 
 NHDPoint
 36700   GAGING STATION  delete
@@ -348,6 +349,8 @@ def filterTags(attrs):
                 tags['dam'] = 'artificial'
             elif attrs['FCode'] == '56800':
                 tags['man_made'] = 'dyke'
+            elif attrs['FCode'] == '48300':
+                tags['barrier'] = 'wall'
             else:
                 tags['fixme'] = 'Unknown FCode in NHDLine: ' + attrs['FCode']
         elif attrs['__LAYER'] == 'NHDPoint':
