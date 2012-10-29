@@ -200,9 +200,9 @@ def filterTags(attrs):
         return
     tags = {}
     for k,v in attrs.iteritems():
-        if k[0:10] not in ('AreaSqKm', 'ComID', 'FType', 'OBJECTID', 'Permanent_', 'Resolution', 
+        if k[0:10] not in ('AreaSqKm', 'ComID', 'FType', 'OBJECTID', 'OBJECTID_', 'Permanent_', 'Resolution', 
         'Shape_Area', 'Shape_Leng', 'Elevation', 'LengthKM', 'GNIS_Name', 'WBAreaComI', 'WBArea_Per', 
-        'FeatureDet', 'Source_Fea', 'Enabled', 'FCode', 'FlowDir', '__LAYER'):
+        'FeatureDet', 'Source_Fea', 'Enabled', 'FCode', 'FlowDir'):
             if v != '':
                 tags['nhd:'+k]=v
             
@@ -232,7 +232,7 @@ def filterTags(attrs):
             NHDFlowline Features
             '''
             if attrs['FCode'] == '55800':
-                if 'name' in tags and 'river'.upper() in tags['name'].upper():
+                if 'name' in tags and 'RIVER' in tags['name'].upper():
                     tags['waterway'] = 'river'
                 else:
                     tags['waterway'] = 'stream'
@@ -275,11 +275,11 @@ def filterTags(attrs):
             elif attrs['FCode'] == '39001':
                 tags['natural'] = 'water'
                 tags['intermittent'] = 'yes'
-                if 'name' in tags and 'lake'.upper() in tags['name'].upper():
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '39004':
                 tags['natural'] = 'water'
-                tags['water'] = 'lake'
+                tags['water'] = 'lake' # fix this?
                 if 'name' in tags and 'lake'.upper() in tags['name'].upper():
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '39009':
