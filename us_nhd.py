@@ -213,9 +213,11 @@ def filterTags(attrs):
         return
     tags = {}
     for k,v in attrs.iteritems():
-        if k[0:10] not in ('AreaSqKm', 'ComID', 'FType', 'OBJECTID', 'OBJECTID_', 'Permanent_', 'Resolution', 
-        'Shape_Area', 'Shape_Leng', 'Elevation', 'LengthKM', 'GNIS_Name', 'WBAreaComI', 'WBArea_Per', 
-        'FeatureDet', 'Source_Fea', 'Enabled', 'FCode', 'FlowDir'):
+        if k[0:10] not in ('AreaSqKm', 'ComID', 'FType', 'OBJECTID',
+        'OBJECTID_', 'Permanent_', 'Resolution', 'Shape_Area', 'Shape_Leng',
+        'Elevation', 'LengthKM', 'GNIS_Name', 'WBAreaComI', 'WBArea_Per', 
+        'FeatureDet', 'Source_Fea', 'Enabled', 'FCode', 'FlowDir', 'ReachCode',
+        'FDate', 'ReachResol', 'EventDate', 'Measure', 'ReachSMDat'):
             if v != '':
                 tags['nhd:'+k]=v
             
