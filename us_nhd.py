@@ -189,15 +189,23 @@ def filterLayer(layer):
 def filterFeature(ogrfeature, fieldNames, reproject):
     if not ogrfeature:
         return
+    
+    FCode = None
+    layer = None 
     index = ogrfeature.GetFieldIndex('FCode')
     if index >= 0:
         FCode = ogrfeature.GetField(index)
-        if FCode in (33400, 44500, 33601, 36200, 36700, 41100, 50301, 50302, 45000):
+    
+    index = ogrfeature.GetFieldIndex('__LAYER')
+    if index >= 0:
+        layer = ogrfeature.GetField(index)
+        
+    if FCode in (33400, 44500, 33601, 36200, 36700, 41100, 50301, 50302, 45000):
+        return None
+    elif FCode in (46003, 46006) and layer == 'NHDFlowline':
+        index = ogrfeature.GetFieldIndex('GNIS_Name')
+        if not (index >= 0) or ogrfeature.GetField(index) is None:
             return None
-        '''elif FCode in (46003, 46006):
-            index = ogrfeature.GetFieldIndex('GNIS_Name')
-            if not (index >= 0) or ogrfeature.GetField(index) is None:
-                return None'''
     return ogrfeature
 
 def filterTags(attrs):
