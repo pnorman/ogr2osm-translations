@@ -305,6 +305,10 @@ def filterTags(attrs):
                 tags['natural'] = 'water'
                 if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
+            elif attrs['FCode'] == '39011':
+                tags['natural'] = 'water'
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
+                    tags['water'] = 'lake'
             elif attrs['FCode'] == '36100':
                 tags['natural'] = 'wetland'
                 tags['wetland'] = 'dry_lake'
@@ -420,7 +424,10 @@ def filterTags(attrs):
                 tags['natural'] = 'water'
                 tags['intermittent'] = 'yes'
             elif attrs['FCode'] == '39800':
+                tags['waterway'] = 'lock'
+            elif attrs['FCode'] == '45500':
                 tags['natural'] = 'water'
+                tags['water'] = 'spillway'
                 
             else:
                 tags['fixme'] = 'Unknown FCode in NHDArea: ' + attrs['FCode']
