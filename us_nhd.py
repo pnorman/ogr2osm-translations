@@ -295,15 +295,15 @@ def filterTags(attrs):
             elif attrs['FCode'] == '39004':
                 tags['natural'] = 'water'
                 tags['water'] = 'lake' # fix this?
-                if 'name' in tags and 'lake'.upper() in tags['name'].upper():
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '39009':
                 tags['natural'] = 'water'
-                if 'name' in tags and 'lake'.upper() in tags['name'].upper():
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '39010':
                 tags['natural'] = 'water'
-                if 'name' in tags and 'lake'.upper() in tags['name'].upper():
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '36100':
                 tags['natural'] = 'wetland'
@@ -366,6 +366,8 @@ def filterTags(attrs):
                 tags['man_made'] = 'dyke'
             elif attrs['FCode'] == '48300':
                 tags['barrier'] = 'wall'
+            elif attrs['FCode'] == '36900':
+                tags['waterway'] = 'lock_gate'
             else:
                 tags['fixme'] = 'Unknown FCode in NHDLine: ' + attrs['FCode']
         elif attrs['__LAYER'] == 'NHDPoint':
@@ -417,6 +419,8 @@ def filterTags(attrs):
             elif attrs['FCode'] == '48400':
                 tags['natural'] = 'water'
                 tags['intermittent'] = 'yes'
+            elif attrs['FCode'] == '39800':
+                tags['natural'] = 'water'
                 
             else:
                 tags['fixme'] = 'Unknown FCode in NHDArea: ' + attrs['FCode']
