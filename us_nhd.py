@@ -202,11 +202,19 @@ def filterFeature(ogrfeature, fieldNames, reproject):
     if index >= 0:
         layer = ogrfeature.GetField(index)
         
-    if FCode in (33400, 44500, 33601, 36200, 36700, 41100, 50301, 50302, 45000):
+    if FCode in (33400, 44500, 33601, 33603, 36200, 36700, 41100, 50301, 50302, 45000, 42823):
         return None
-    elif FCode in (46003, 46006) and layer == 'NHDFlowline':
+    elif FCode in (46003, 46007) and layer == 'NHDFlowline':
         index = ogrfeature.GetFieldIndex('GNIS_Name')
         if not (index >= 0) or ogrfeature.GetField(index) is None:
+            return None
+            
+    if layer == 'NHDPointEventFC':
+        EventType = None
+        index = ogrfeature.GetFieldIndex('EventType')
+        if index >= 0:
+            EventType = ogrfeature.GetField(index)
+        if EventType == '6':
             return None
     return ogrfeature
 
@@ -217,9 +225,10 @@ def filterTags(attrs):
     for k,v in attrs.iteritems():
         if k[0:10] not in ('AreaSqKm', 'ComID', 'FType', 'OBJECTID',
         'OBJECTID_', 'Permanent_', 'Resolution', 'Shape_Area', 'Shape_Leng',
-        'Elevation', 'LengthKM', 'GNIS_Name', 'WBAreaComI', 'WBArea_Per', 
+        'Elevation', 'LengthKM', 'GNIS_Name', 'WBAreaComI', 'WBArea_Per',
         'FeatureDet', 'Source_Fea', 'Enabled', 'FCode', 'FlowDir', 'ReachCode',
-        'FDate', 'ReachResol', 'EventDate', 'Measure', 'ReachSMDat'):
+        'FDate', 'ReachResol', 'EventDate', 'Measure', 'ReachSMDat', '__LAYER',
+        'FeatureClassRef'):
             if v != '':
                 tags['nhd:'+k]=v
             
@@ -242,7 +251,7 @@ def filterTags(attrs):
         tags['directional'] = 'no'
     
     if 'FCode' in attrs and attrs['FCode'] != '':
-        tags['gnis:fcode'] = attrs['FCode'] # Remove for production
+        #tags['gnis:fcode'] = attrs['FCode'] # Remove for production
         
         if attrs['__LAYER'] == 'NHDFlowline':
             '''
@@ -259,13 +268,22 @@ def filterTags(attrs):
                     tags['directional'] = 'yes'        
             elif attrs['FCode'] == '56600':
                 tags['natural'] = 'coastline'
+            elif attrs['FCode'] == '42800':
+                tags['man_made'] = 'pipeline'
             elif attrs['FCode'] == '42803':
                 tags['man_made'] = 'pipeline'
                 tags['location'] = 'underground'
                 tags['type'] = 'water'
+            elif attrs['FCode'] == '42805':
+                tags['man_made'] = 'pipeline'
+                tags['type'] = 'water'
             elif attrs['FCode'] == '42807':
                 tags['man_made'] = 'pipeline'
                 tags['location'] = 'underground'
+                tags['type'] = 'water'
+            elif attrs['FCode'] == '42808':
+                tags['man_made'] = 'pipeline'
+                tags['location'] = 'underwater'
                 tags['type'] = 'water'
             elif attrs['FCode'] == '46000' or attrs['FCode'] == '46006':
                 if 'name' in tags and 'river'.upper() in tags['name'].upper():
@@ -296,9 +314,20 @@ def filterTags(attrs):
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '39004':
                 tags['natural'] = 'water'
-                tags['water'] = 'lake' # fix this?
                 if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
+            elif attrs['FCode'] == '39005':
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
+                    tags['natural'] = 'water'
+                    tags['water'] = 'lake'
+                else:
+                    tags['natural'] = 'wetland'
+            elif attrs['FCode'] == '39006':
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
+                    tags['natural'] = 'water'
+                    tags['water'] = 'lake'
+                else:
+                    tags['natural'] = 'wetland'
             elif attrs['FCode'] == '39009':
                 tags['natural'] = 'water'
                 if 'name' in tags and 'LAKE' in tags['name'].upper():
@@ -308,6 +337,10 @@ def filterTags(attrs):
                 if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
             elif attrs['FCode'] == '39011':
+                tags['natural'] = 'water'
+                if 'name' in tags and 'LAKE' in tags['name'].upper():
+                    tags['water'] = 'lake'
+            elif attrs['FCode'] == '39012':
                 tags['natural'] = 'water'
                 if 'name' in tags and 'LAKE' in tags['name'].upper():
                     tags['water'] = 'lake'
@@ -324,6 +357,13 @@ def filterTags(attrs):
             elif attrs['FCode'] == '43603':
                 tags['natural'] = 'water'
                 tags['water'] = 'pool'
+            elif attrs['FCode'] == '43605':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
+                tags['pond'] = 'tailing'
+            elif attrs['FCode'] == '43606':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
             elif attrs['FCode'] == '43609':
                 tags['natural'] = 'water'
                 tags['water'] = 'pond'
@@ -350,6 +390,21 @@ def filterTags(attrs):
             elif attrs['FCode'] == '43617':
                 tags['natural'] = 'water'
                 tags['water'] = 'pond'
+            elif attrs['FCode'] == '43615':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
+            elif attrs['FCode'] == '43621':
+                tags['natural'] = 'water'
+                tags['water'] = 'reservoir'
+                tags['landuse'] = 'reservoir'
+            elif attrs['FCode'] == '43624':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
+                tags['pond'] = 'treatment'
+            elif attrs['FCode'] == '43625':
+                tags['natural'] = 'water'
+                tags['water'] = 'pond'
+                tags['pond'] = 'tailing'
             elif attrs['FCode'] == '46600':
                 tags['natural'] = 'wetland'
             elif attrs['FCode'] == '46601':
@@ -377,7 +432,9 @@ def filterTags(attrs):
             else:
                 tags['fixme'] = 'Unknown FCode in NHDLine: ' + attrs['FCode']
         elif attrs['__LAYER'] == 'NHDPoint':
-            if attrs['FCode'] == '44101':
+            if attrs['FCode'] == '43100':
+                tags['waterway'] = 'rapids'
+            elif attrs['FCode'] == '44101':
                 tags['natural'] = 'rock'
             elif attrs['FCode'] == '45800':
                 tags['natural'] = 'spring'
@@ -388,6 +445,8 @@ def filterTags(attrs):
             else:
                 tags['fixme'] = 'Unknown FCode in NHDPoint: ' + attrs['FCode']
         elif attrs['__LAYER'] == 'NHDArea':
+            if attrs['FCode'] == '30700':
+                tags['natural'] = 'water'
             if attrs['FCode'] == '31200':
                 tags['natural'] = 'bay'
             elif attrs['FCode'] == '33600':
@@ -439,8 +498,8 @@ def filterTags(attrs):
     '''
     Code is required to handle monitoring stations 
     '''
-    if 'EventType' in attrs and attrs['EventType'] != '':
-        if attrs['__LAYER'] == 'NHDPointEventFC':
+    if attrs['__LAYER'] == 'NHDPointEventFC':
+        if 'EventType' in attrs and attrs['EventType'] != '':
             if attrs['EventType'] == '2':
                 tags['waterway'] = 'dam'
             
