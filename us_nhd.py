@@ -13,6 +13,8 @@ These files are very large and it may be desirable to cut them down to size firs
 
 http://nhd.usgs.gov/NHDDataDictionary_model2.0.pdf helps explain the definitions of some fields
 
+http://nhd.usgs.gov/userGuide/Robohelpfiles/NHD_User_Guide/Feature_Catalog/Hydrography_Dataset/Complete_FCode_List.htm
+
 It may be desirable to post-process with https://trac.openstreetmap.org/browser/applications/utils/filter/merge-ways/merge-ways.pl (maybe)
 
 The following fields are dropped from the source shapefile:
@@ -96,7 +98,7 @@ NHDWaterbody
 39000   LAKE/POND       n=water [water=lake]
 39001   LAKE/POND       n=water [water=lake] intermittent=yes
 39004   LAKE/POND       n=water [water=lake]
-39005
+39005   LAKE/POND       n=water [water=lake]
 39006
 39009   LAKE/POND       n=water [water=lake] ele=*
 39010
@@ -147,7 +149,7 @@ NHDArea
 46000   STREAM/RIVER    ww=riverbank
 46003   STREAM/RIVER    n=water intermittent=yes        Maybe add water=river/stream based on reachcode and feature inside?
 46006   STREAM/RIVER    ww=riverbank
-46007   See WASH
+46007   See WASH        Where these do occur (weirdly enough) they're in farmland?
 48400   WASH            n=water intermittent=yes        Can't tell apart from 46003
 '''
 
